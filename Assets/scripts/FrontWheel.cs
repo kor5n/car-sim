@@ -15,10 +15,10 @@ public class FrontWheel : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (CarInput.instance.movement.x == 1)
+        if (CarInput.instance.movement.x > 0)
         {
             transform.rotation = Quaternion.Euler(-90, 45, 0);
-        }else if (CarInput.instance.movement.x == -1)
+        }else if (CarInput.instance.movement.x < 0)
         {
             transform.rotation = Quaternion.Euler(-90, -45, 0);
         }
