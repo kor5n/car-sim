@@ -7,6 +7,10 @@ using UnityEngine;
 
 public class Driving : MonoBehaviour
 {
+    [Header("Visuals")]
+    [SerializeField] private float tireRotSpeed = 3000f;
+    [SerializeField] private float maxSteeringAngle = 30f;
+
     [Header("Input")]
     private float moveInput = 0;
     private float steerInput = 0;
@@ -34,6 +38,7 @@ public class Driving : MonoBehaviour
     [SerializeField] private Transform[] rayPoints;
     [SerializeField] private LayerMask drivable;
     [SerializeField] private Transform accelerationPoint;
+    [SerializeField] private GameObject[] tires = new GameObject[4];
 
     private int[] wheelsIsGrounded =  new int[4];
     private bool isGrounded = false;
@@ -86,11 +91,19 @@ public class Driving : MonoBehaviour
 
                 carRB.AddForceAtPosition(netForce * rayPoints[i].up, rayPoints[i].position);
 
+                //visuals
+
+                SetTirePosition(tires[i], hit.point + rayPoints[i].up * wheelRadius);
+
                 Debug.DrawLine(rayPoints[i].position, hit.point, Color.red);
             }
             else
             {
                 wheelsIsGrounded[i] = 0;
+
+                //visual
+
+                SetTirePosition(tires[i], rayPoints[i].position - rayPoints[i].up * maxLength);
 
                 Debug.DrawLine(rayPoints[i].position, rayPoints[i].position + (wheelRadius + maxLength) * -rayPoints[i].up, Color.green);
             }
@@ -152,6 +165,34 @@ public class Driving : MonoBehaviour
         carRB = GetComponent<Rigidbody>();  
     }
 
+    private void Visuals()
+    {
+        TireVisuals();
+    }
+    private void TireVisuals()
+    {
+        float steeringAngle = maxSteeringAngle * steerInput;
+
+        for(int i=0;i<tires.Length; i++)
+        {
+            if (i < 2)
+            {
+                tires[i].transform.Rotate(Vector3.up, tireRotSpeed * carVelocityRatio * Time.deltaTime, Space.Self);
+                Debug.Log(steeringAngle);
+                tires[i].transform.localEulerAngles = new Vector3(tires[i].transform.localEulerAngles.x, steeringAngle - 90, tires[i].transform.localEulerAngles.z);
+            }
+            else
+            {
+                tires[i].transform.Rotate(Vector3.up, tireRotSpeed * moveInput * Time.deltaTime, Space.Self);
+            }
+        }
+    }
+
+    private void SetTirePosition(GameObject tire, Vector3 targetPosition)
+    {
+        tire.transform.position = targetPosition;
+    }
+
     // Update is called once per frame
 
     private void FixedUpdate()
@@ -160,6 +201,7 @@ public class Driving : MonoBehaviour
         GroundCheck();
         CalculateCarVelocity();
         Movement();
+        Visuals();
     }
     private void Update()
     {
