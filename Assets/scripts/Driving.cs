@@ -15,6 +15,9 @@ public class Driving : MonoBehaviour
     [SerializeField] private float acceleration = 25f;
     [SerializeField] private float maxSpeed = 100f;
     [SerializeField] private float decelleration = 10f;
+    [SerializeField] private float steerStrength = 15f;
+    [SerializeField] private AnimationCurve turningCurve;
+    [SerializeField] private float dragCoefficient = 1f;
 
     private Vector3 currentCarVelocity = Vector3.zero;
     private float carVelocityRatio = 0;
@@ -103,11 +106,27 @@ public class Driving : MonoBehaviour
         
     }
 
-    private void Decceleration()
+    private void Deceleration()
     {
         
         carRB.AddForceAtPosition(decelleration * moveInput * -transform.forward, accelerationPoint.position, ForceMode.Acceleration); //maybe should be changed
         
+    }
+
+    private void Turn()
+    {
+        carRB.AddRelativeTorque (steerStrength * steerInput * turningCurve.Evaluate(Mathf.Abs(carVelocityRatio)) * Mathf.Sign(carVelocityRatio) * carRB.transform.up, ForceMode.Acceleration);
+    }
+
+    private void SidewaysDrag()
+    {
+        float currentSidewaySpeed = currentCarVelocity.x;
+
+        float dragMagnitude = -currentSidewaySpeed * dragCoefficient;
+
+        Vector3 dragForce = dragMagnitude * transform.right;
+
+        carRB.AddForceAtPosition(dragForce, carRB.worldCenterOfMass, ForceMode.Acceleration); 
     }
 
     private void GetPlayerInput()
@@ -121,7 +140,9 @@ public class Driving : MonoBehaviour
         if (isGrounded)
         {
             Acceleration();
-            Decceleration();
+            Deceleration();
+            Turn();
+            SidewaysDrag();
         }
     }
 
