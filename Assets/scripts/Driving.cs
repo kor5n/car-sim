@@ -12,8 +12,8 @@ public class Driving : MonoBehaviour
     [SerializeField] private float maxSteeringAngle = 30f;
 
     [Header("Input")]
-    private float moveInput = 0;
-    private float steerInput = 0;
+    //private float moveInput = 0;
+    //private float steerInput = 0;
 
     [Header("Car Settings")]
     [SerializeField] private float acceleration = 25f;
@@ -115,20 +115,20 @@ public class Driving : MonoBehaviour
     private void Acceleration()
     {
    
-        carRB.AddForceAtPosition(acceleration * moveInput * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+        carRB.AddForceAtPosition(acceleration * CarInput.instance.movement.y * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
         
     }
 
     private void Deceleration()
     {
         
-        carRB.AddForceAtPosition(decelleration * moveInput * -transform.forward, accelerationPoint.position, ForceMode.Acceleration); //maybe should be changed
+        carRB.AddForceAtPosition(decelleration * -CarInput.instance.movement.y * -transform.forward, accelerationPoint.position, ForceMode.Acceleration); //maybe should be changed
         
     }
 
     private void Turn()
     {
-        carRB.AddRelativeTorque (steerStrength * steerInput * turningCurve.Evaluate(Mathf.Abs(carVelocityRatio)) * Mathf.Sign(carVelocityRatio) * carRB.transform.up, ForceMode.Acceleration);
+        carRB.AddRelativeTorque (steerStrength * CarInput.instance.movement.x * turningCurve.Evaluate(Mathf.Abs(carVelocityRatio)) * Mathf.Sign(carVelocityRatio) * carRB.transform.up, ForceMode.Acceleration);
     }
 
     private void SidewaysDrag()
@@ -142,11 +142,11 @@ public class Driving : MonoBehaviour
         carRB.AddForceAtPosition(dragForce, carRB.worldCenterOfMass, ForceMode.Acceleration); 
     }
 
-    private void GetPlayerInput()
+    /*private void GetPlayerInput()
     {
         moveInput = Input.GetAxis("Vertical");
         steerInput = Input.GetAxis("Horizontal");
-    }
+    }*/
     
     private void Movement()
     {
@@ -171,19 +171,18 @@ public class Driving : MonoBehaviour
     }
     private void TireVisuals()
     {
-        float steeringAngle = maxSteeringAngle * steerInput;
+        float steeringAngle = maxSteeringAngle * CarInput.instance.movement.x;
 
         for(int i=0;i<tires.Length; i++)
         {
             if (i < 2)
             {
-                tires[i].transform.Rotate(Vector3.up, tireRotSpeed * carVelocityRatio * Time.deltaTime, Space.Self);
-                Debug.Log(steeringAngle);
+                tires[i].transform.Rotate(Vector3.up, tireRotSpeed * carVelocityRatio * Time.deltaTime * -1, Space.Self);
                 tires[i].transform.localEulerAngles = new Vector3(tires[i].transform.localEulerAngles.x, steeringAngle - 90, tires[i].transform.localEulerAngles.z);
             }
             else
             {
-                tires[i].transform.Rotate(Vector3.up, tireRotSpeed * moveInput * Time.deltaTime, Space.Self);
+                tires[i].transform.Rotate(Vector3.up, tireRotSpeed * CarInput.instance.movement.y * Time.deltaTime, Space.Self);
             }
         }
     }
@@ -205,6 +204,6 @@ public class Driving : MonoBehaviour
     }
     private void Update()
     {
-        GetPlayerInput();
+        //GetPlayerInput();
     }
 }
